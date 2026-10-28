@@ -23,12 +23,14 @@
   color-scheme:dark;
 }
 html,body{height:100%}
+/* Trên điện thoại overflow-x:hidden ở body không đủ: thứ gì tràn ra ngoài sẽ làm trình duyệt nới khung trang, mọi lớp phủ cố định bị phình theo */
+html{overflow-x:hidden;overflow-x:clip}
 body{margin:0;background:radial-gradient(90% 60% at 50% 0%,#2a1d22,var(--room) 65%);background-color:var(--room);color:var(--paper);font-family:var(--ui);overflow-x:hidden}
 .wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .tag{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);z-index:20}
 
 /* Opening */
-.intro{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding-block:40px;transition:opacity .7s}
+.intro{min-height:100%;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding-block:40px;transition:opacity .7s}
 .intro.gone{opacity:0;pointer-events:none}
 .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--edge)}
 .btn:focus-visible,.strip:focus-visible,.t-stub:focus-visible{outline:2px solid var(--edge);outline-offset:3px}
@@ -452,14 +454,21 @@ $("creditsBack").addEventListener("click", closeCredits);
 $("creditsAgain").addEventListener("click", () => { closeCredits(); setTimeout(startAuto, reduce ? 0 : 500); });
 addEventListener("keydown", e => { if (e.key === "Escape" && !$("credits").hidden) closeCredits(); });
 
-// Âm thanh: trình duyệt chỉ cho phát sau khi người xem chạm, nên mở khóa ngay lúc chạm vào vé
-let ac = null;
+// Âm thanh: trình duyệt chỉ cho phát sau một thao tác của người xem. Trên điện thoại, chạm xuống
+// chưa tính, phải đến lúc nhấc tay (touchend/pointerup/click) mới mở khóa được, nên nghe ở mọi thao tác.
+let ac = null, pendingTear = false;
 function unlockAudio(){
   try {
     ac = ac || new (window.AudioContext || window.webkitAudioContext)();
-    if (ac.state === "suspended") ac.resume();
+    if (ac.state !== "running"){
+      // iOS cũ cần phát thật một âm (dù im lặng) trong lúc chạm mới chịu mở
+      const s = ac.createBufferSource(); s.buffer = ac.createBuffer(1, 1, 22050); s.connect(ac.destination); s.start(0);
+      const p = ac.resume();
+      if (p) p.then(() => { if (pendingTear){ pendingTear = false; tearSound(); } }).catch(() => {});
+    }
   } catch(e){}
 }
+["pointerdown","pointerup","touchend","click","keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, true));
 // Tiếng "bíp" ngắn mỗi số, như băng đếm ngược ngày xưa
 function beep(){
   if (!ac || ac.state !== "running") return;
@@ -692,14 +701,16 @@ let drag = null, torn = false;
 function tear(){
   if (torn) return;
   torn = true; drag = null;
-  tearSound();
+  // vé đứt giữa lúc đang kéo, khi đó điện thoại có thể chưa mở khóa âm thanh: để dành, nhấc tay là phát
+  if (ac && ac.state === "running") tearSound(); else pendingTear = true;
   stub.classList.remove("held");
   stub.classList.add("gone");
   const from = getComputedStyle(stub).transform;
   stub.animate([
     {transform: from === "none" ? "none" : from, opacity: 1},
     {transform: "translate(70px, 115vh) rotate(55deg)", opacity: 1}
-  ], {duration: reduce ? 0 : 1000, easing: "cubic-bezier(.5,0,.8,.6)", fill: "forwards"});
+  ], {duration: reduce ? 0 : 1000, easing: "cubic-bezier(.5,0,.8,.6)", fill: "forwards"})
+    .onfinish = () => { stub.style.visibility = "hidden"; };   // rơi xong thì ẩn hẳn, không để nằm ngoài màn hình làm trang rộng ra
   ticket.classList.add("torn", "jolt");
   $("intro").classList.add("torn");
   if (navigator.vibrate) navigator.vibrate(30);
