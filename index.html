@@ -91,7 +91,29 @@ body{margin:0;background:radial-gradient(90% 60% at 50% 0%,#2a1d22,var(--room) 6
 .edge-top{top:26px}.edge-bot{bottom:25px}
 .edge-bot span:first-child{font-family:var(--digit);font-size:15px;letter-spacing:.05em}
 .frame{position:relative;aspect-ratio:3/2;max-width:100%;border-radius:3px;overflow:hidden;filter:saturate(.9) contrast(1.02);transition:filter .9s ease,transform .9s ease}
-.cell:not(.active) .frame{filter:saturate(.35) brightness(.55);transform:scale(.96)}
+.cell:not(.active) .frame,.cell:not(.active) .back{filter:saturate(.35) brightness(.55)}
+.cell:not(.active) .flip{transform:scale(.96)}
+
+/* Lật mặt sau ảnh: chạm vào ảnh để lật, mặt sau là giấy ảnh cũ với lời nhắn viết tay */
+.flip{perspective:1200px;transition:transform .9s ease;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.cell.active .flip{cursor:pointer}
+.card{position:relative;transform-style:preserve-3d;transition:transform .85s cubic-bezier(.4,.2,.2,1)}
+.card>.frame{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.cell.flipped .card{transform:rotateY(180deg)}
+.back{position:absolute;inset:0;border-radius:3px;overflow:hidden;transform:rotateY(180deg);-webkit-backface-visibility:hidden;backface-visibility:hidden;
+  display:flex;flex-direction:column;padding:7% 8% 6%;color:#283a7c;text-align:left;transition:filter .9s ease;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='230' height='70'><text x='6' y='40' font-family='Arial' font-size='9' letter-spacing='2.5' fill='rgba(60,70,110,0.09)' transform='rotate(-14 115 35)'>PHOTO PAPER  PHOTO PAPER</text></svg>"),
+    radial-gradient(38% 30% at 86% 14%,rgba(150,98,36,.2),transparent 70%),
+    radial-gradient(22% 18% at 10% 88%,rgba(140,90,30,.16),transparent 70%),
+    radial-gradient(130% 100% at 50% 50%,transparent 55%,rgba(125,82,28,.3)),
+    #eee0c1}
+.b-msg{flex:1;min-height:0;overflow:hidden;margin:0;font-family:var(--hand);font-weight:600;font-size:clamp(15px,4.4vw,21px);line-height:1.3;transform:rotate(-1.5deg);transform-origin:0 0;text-wrap:pretty}
+.b-foot{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.b-sign{font-family:var(--hand);font-weight:700;font-size:clamp(16px,4.6vw,22px);transform:rotate(-4deg);white-space:nowrap}
+.b-lab{border:1.5px solid rgba(112,52,124,.55);color:rgba(112,52,124,.75);font:600 8.5px var(--ui);letter-spacing:.14em;text-transform:uppercase;padding:3px 6px 2px;border-radius:3px;transform:rotate(-5deg);line-height:1.3;mix-blend-mode:multiply}
+.b-lab b{display:block;font:400 14px var(--digit);letter-spacing:.04em}
+.flip-hint{text-align:center;font-size:12px;color:var(--muted);letter-spacing:.04em;margin-top:-10px}
 .frame::after{content:"";position:absolute;inset:0;mix-blend-mode:overlay;opacity:.35;pointer-events:none;
   background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
 .frame img{width:100%;height:100%;object-fit:cover;display:block}
@@ -154,6 +176,35 @@ body{margin:0;background:radial-gradient(90% 60% at 50% 0%,#2a1d22,var(--room) 6
 .credits-end{position:absolute;left:16px;right:16px;bottom:calc(28px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;justify-content:center;flex-wrap:wrap;opacity:0;pointer-events:none;transition:opacity .8s}
 .credits-end.on{opacity:1;pointer-events:auto}
 @media (prefers-reduced-motion:reduce){.credits{overflow-y:auto}.roll{position:static;padding-block:80px 120px}}
+.roll.fade{opacity:0;transition:opacity 1.2s ease}
+
+/* Cảnh sau danh đề: màn đen, rồi "Cảnh bị cắt" với ảnh dìm rơi chồng lên nhau và bị đóng dấu */
+.post{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+  padding:56px max(16px,env(safe-area-inset-right,0px)) calc(96px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  opacity:0;pointer-events:none;transition:opacity .15s}
+.post.on{opacity:1;pointer-events:auto}
+.post-head{text-align:center;opacity:0;transform:translateY(10px);transition:opacity .6s .15s,transform .6s .15s}
+.post.on .post-head{opacity:1;transform:none}
+.post-head .k{font-family:var(--digit);font-size:16px;letter-spacing:.2em;color:#ff4d5e;text-transform:uppercase}
+.post-head .k i{font-style:normal;animation:rec 1s steps(1) infinite}
+@keyframes rec{50%{opacity:0}}
+.post-head h2{margin:2px 0 0;font-family:var(--hand);font-weight:700;font-size:clamp(36px,10vw,48px);line-height:1.1}
+.post-head p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.pile{display:grid;width:min(78vw,330px)}
+.snap{grid-area:1/1;background:#f6f1e7;padding:10px 10px 12px;border-radius:2px;box-shadow:0 18px 40px rgba(0,0,0,.6);transform:rotate(var(--r));
+  animation:drop .6s cubic-bezier(.2,.9,.3,1.15) both;transition:filter .5s}
+@keyframes drop{from{opacity:0;transform:translateY(-55vh) rotate(calc(var(--r) - 28deg)) scale(1.08)}}
+.snap.under{filter:brightness(.6)}
+.snap .ph{position:relative;aspect-ratio:4/3;overflow:hidden;background-color:#222}
+.snap .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.snap .scn{position:absolute;left:8px;top:8px;font-family:var(--digit);font-size:15px;color:#fff;background:rgba(0,0,0,.55);padding:1px 7px;letter-spacing:.06em;z-index:2}
+.snap .sample{top:auto;bottom:8px}
+.snap .cap{margin:9px 4px 0;font-family:var(--hand);font-weight:600;font-size:clamp(18px,5.2vw,22px);line-height:1.2;color:#2b2522;text-align:center;text-wrap:balance}
+.snap .cut{position:absolute;right:7%;bottom:10%;z-index:3;border:3px solid #d42a3c;border-radius:4px;color:#d42a3c;background:rgba(255,240,240,.12);
+  font:700 17px var(--ui);letter-spacing:.2em;text-transform:uppercase;padding:4px 10px 3px;transform:rotate(-14deg) scale(2.4);opacity:0;text-shadow:0 0 1px rgba(212,42,60,.6)}
+.snap.stamped .cut{opacity:.93;transform:rotate(-14deg);transition:transform .2s cubic-bezier(.3,1.6,.5,1),opacity .08s}
+.post-out{margin-top:6px;font-size:13px;color:var(--muted);letter-spacing:.04em;opacity:0;transition:opacity .8s}
+.post-out.on{opacity:1}
 
 /* Lớp xước + nhấp nháy phủ lên khi đang chiếu, không chặn thao tác */
 .projector{position:fixed;left:0;top:0;z-index:14;pointer-events:none;opacity:0;transition:opacity 1.2s}
@@ -200,6 +251,7 @@ body{margin:0;background:radial-gradient(90% 60% at 50% 0%,#2a1d22,var(--room) 6
   </div>
   <div class="strip" id="strip" tabindex="0" aria-label="Cuộn phim, vuốt ngang để xem"></div>
   <div class="dots" id="dots" aria-hidden="true"></div>
+  <div class="flip-hint" id="flipHint" hidden>Chạm vào ảnh để xem mặt sau ↻</div>
   <div class="caption" id="caption" aria-live="polite">
     <div class="cap-date" id="capDate"></div>
     <div class="cap-title" id="capTitle"></div>
@@ -217,6 +269,11 @@ body{margin:0;background:radial-gradient(90% 60% at 50% 0%,#2a1d22,var(--room) 6
 <section class="credits" id="credits" hidden aria-label="Danh đề cuối phim">
   <button class="btn credits-close" id="creditsClose" aria-label="Đóng danh đề">✕</button>
   <div class="roll" id="roll"></div>
+  <div class="post" id="post" aria-live="polite">
+    <div class="post-head"><div class="k"><i>●</i> Cảnh sau danh đề</div><h2>Cảnh bị cắt</h2><p>Những cảnh không được đạo diễn duyệt</p></div>
+    <div class="pile" id="pile"></div>
+    <div class="post-out" id="postOut">Lần này hết thật rồi. Thật đấy.</div>
+  </div>
   <div class="credits-end" id="creditsEnd">
     <button class="btn" id="creditsAgain">↺ Xem lại từ đầu</button>
     <button class="btn" id="creditsBack">Về cuộn phim</button>
@@ -230,15 +287,24 @@ const DATA = {
   names: "Tuyết & Anh",
   since: "2025-06-12",
   film: "TUYẾT ♥ ANH 400",
+  signature: "— Anh",   // chữ ký dưới lời nhắn mặt sau ảnh
   // Vé mời ở màn mở đầu
   ticket: {show:"Suất chiếu riêng", movie:"Hành trình của chúng ta", seat:"Tuyết", hall:"Trái tim Anh", price:"Một cái ôm", no:"01"},
   frames: [
-    {date:"2025-03-08", title:"Lần đầu gặp nhau", text:"Quán cà phê nhỏ gần hồ. Em đến muộn 15 phút mà vẫn cười như không có chuyện gì.", scene:"cafe"},
-    {date:"2025-03-20", title:"Tin nhắn đầu tiên", text:"\"Hôm nay trời đẹp ghê.\" Anh đọc đi đọc lại câu đó cả buổi tối.", scene:"night"},
-    {date:"2025-04-05", title:"Buổi hẹn đầu tiên", text:"Trời mưa to, hai đứa trú dưới mái hiên và nói chuyện đến tận khuya.", scene:"rain"},
-    {date:"2025-06-12", title:"Ngày tỏ tình", text:"Ngày anh run nhất trong đời. May mà em gật đầu.", scene:"sunset"},
-    {date:"2025-09-02", title:"Chuyến đi đầu tiên", text:"Đà Lạt, sương sớm và hai ly sữa đậu nành nóng bên hồ.", scene:"mountain"},
-    {date:"2026-06-12", title:"Tròn 1 năm", text:"Một chiếc bánh nhỏ, 365 ngày và rất nhiều kỷ niệm.", scene:"party"},
+    // back: lời nhắn viết tay ở mặt sau ảnh (chạm giữ để lật). printed: ngày rửa ảnh, bỏ trống thì lấy 3 ngày sau ngày chụp.
+    {date:"2025-03-08", title:"Lần đầu gặp nhau", text:"Quán cà phê nhỏ gần hồ. Em đến muộn 15 phút mà vẫn cười như không có chuyện gì.", scene:"cafe",
+     photo:"image/0-02-06-65a4b57e7a7884216ad6c79990f2085989b1ec9bbb46bcfdbf071bb3854f0d06_e38b84bb8a683a98.jpg", pos:"50% 45%",
+     back:"Em không biết đâu, hôm đó anh đến sớm 30 phút và uống hết một ly trước khi em tới. Vì hồi hộp."},
+    {date:"2025-03-20", title:"Tin nhắn đầu tiên", text:"\"Hôm nay trời đẹp ghê.\" Anh đọc đi đọc lại câu đó cả buổi tối.", scene:"night",
+     back:"Tin nhắn đó anh chụp màn hình lại. Đổi ba cái điện thoại rồi vẫn còn giữ."},
+    {date:"2025-04-05", title:"Buổi hẹn đầu tiên", text:"Trời mưa to, hai đứa trú dưới mái hiên và nói chuyện đến tận khuya.", scene:"rain",
+     back:"Hôm đó anh đã thầm mong trời mưa thêm một chút nữa."},
+    {date:"2025-06-12", title:"Ngày tỏ tình", text:"Ngày anh run nhất trong đời. May mà em gật đầu.", scene:"sunset",
+     back:"Anh đã tập câu tỏ tình hai mươi lần trước gương. Đến lúc nói thì quên sạch. Cảm ơn em vẫn hiểu."},
+    {date:"2025-09-02", title:"Chuyến đi đầu tiên", text:"Đà Lạt, sương sớm và hai ly sữa đậu nành nóng bên hồ.", scene:"mountain",
+     back:"Hứa với anh, sau này mình quay lại đây, lúc tóc cả hai đã bạc."},
+    {date:"2026-06-12", title:"Tròn 1 năm", text:"Một chiếc bánh nhỏ, 365 ngày và rất nhiều kỷ niệm.", scene:"party",
+     back:"Năm sau, và mọi năm sau nữa, anh vẫn muốn là người cắm nến cho em."},
     {end:true, title:"Còn tiếp...", text:"Cuộn phim này vẫn chưa hết. Mình cùng chụp tiếp những khung hình mới nhé."}
   ],
   // Danh đề cuối phim, chạy sau khung "Còn tiếp...". Mỗi dòng là một trong các kiểu:
@@ -263,6 +329,14 @@ const DATA = {
     {gap:true},
     {note:"Cảm ơn em đã nhận vai chính\nmà không cần thử vai.", heart:true},
     {end:"Hết phần 1", sub:"Phần 2 đang quay · ngày thứ {ngay}"}
+  ],
+  // Cảnh sau danh đề ("Cảnh bị cắt"): ảnh dìm + chú thích lầy, hiện sau vài giây màn đen.
+  // photo: ảnh thật (pos để chọn phần giữ lại) · scene: ảnh minh họa khi chưa có ảnh · tag: số cảnh, lần quay. Để [] nếu không dùng.
+  bloopers: [
+    {photo:"image/0-02-06-65a4b57e7a7884216ad6c79990f2085989b1ec9bbb46bcfdbf071bb3854f0d06_e38b84bb8a683a98.jpg", pos:"50% 50%",
+     tag:"Cảnh 6 · Lần quay 14", caption:"Nữ chính sau khi ăn hết phần bánh kem của đạo diễn."},
+    {scene:"night", tag:"Cảnh 2 · Lần quay 37", caption:"37 lần gõ rồi xóa \"Em ngủ chưa?\". Cuối cùng gửi \"Hôm nay trời đẹp ghê.\""},
+    {scene:"rain", tag:"Cảnh 3 · Lần quay 2", caption:"Đạo diễn cố tỏ ra ngầu dưới mưa. Ba giây sau trượt chân."}
   ]
 };
 
@@ -299,11 +373,19 @@ DATA.frames.forEach((f, i) => {
   if (f.end){
     inner = `<div class="frame s-end"><div class="small">MÌNH ĐÃ BÊN NHAU</div><div class="count">${daysSince(DATA.since).toLocaleString("vi-VN")} NGÀY</div><div class="big">${f.title}</div></div>`;
   } else {
-    const pic = f.photo ? `<img src="${f.photo}" alt="${f.title}" loading="lazy">` : `<span class="sample">Ảnh của bạn</span>`;
+    // pos: phần ảnh được giữ khi cắt vào khung ngang (vd "50% 30%" = giữ phía trên), hữu ích với ảnh dọc
+    const pic = f.photo ? `<img src="${f.photo}" alt="${f.title}" loading="lazy"${f.pos ? ` style="object-position:${f.pos}"` : ""}>` : `<span class="sample">Ảnh của bạn</span>`;
     inner = `<div class="frame ${f.photo ? "" : "s-" + f.scene}">${pic}<span class="stamp">${stamp(f.date)}</span></div>`;
+    if (f.back) inner += `<div class="back" aria-hidden="true"><p class="b-msg"></p><div class="b-foot"><span class="b-lab">Rửa ảnh<b></b></span><span class="b-sign"></span></div></div>`;
   }
-  cell.innerHTML = `<div class="edge-top"><span>${DATA.film}</span><span>${n}</span></div>${inner}<div class="edge-bot"><span>▸ ${n}A</span><span>${pad(n)}</span></div>`;
-  cell.addEventListener("click", () => go(i));
+  cell.innerHTML = `<div class="edge-top"><span>${DATA.film}</span><span>${n}</span></div><div class="flip"><div class="card">${inner}</div></div><div class="edge-bot"><span>▸ ${n}A</span><span>${pad(n)}</span></div>`;
+  if (f.back){
+    const d = new Date(f.date + "T00:00:00");
+    if (!f.printed) d.setDate(d.getDate() + 3);
+    cell.querySelector(".b-msg").textContent = f.back;
+    cell.querySelector(".b-sign").textContent = DATA.signature || "";
+    cell.querySelector(".b-lab b").textContent = f.printed ? longDate(f.printed) : `${pad(d.getDate())}.${pad(d.getMonth()+1)}.${d.getFullYear()}`;
+  }
   strip.appendChild(cell);
   $("dots").appendChild(document.createElement("i"));
 });
@@ -311,7 +393,8 @@ const cells = [...strip.children], dots = [...$("dots").children];
 
 function render(i){
   const f = DATA.frames[i];
-  cells.forEach((c,k) => c.classList.toggle("active", k === i));
+  cells.forEach((c,k) => { c.classList.toggle("active", k === i); if (k !== i) c.classList.remove("flipped"); });
+  updateFlipHint();
   dots.forEach((d,k) => d.classList.toggle("on", k === i));
   $("counter").textContent = `${i+1}/${DATA.frames.length}`;
   $("prev").disabled = i === 0;
@@ -366,7 +449,37 @@ strip.addEventListener("scroll", () => {
   });
 });
 
+// Chạm vào ảnh đang xem để lật mặt sau, chạm lần nữa để lật về. Chạm vào khung bên cạnh thì chuyển sang khung đó.
+let everFlipped = false;
+function updateFlipHint(){
+  const c = cells[idx];
+  $("flipHint").hidden = everFlipped || !c || !c.querySelector(".back");
+}
+// lời nhắn dài thì thu nhỏ chữ cho vừa mặt sau
+function fitBack(cell){
+  const m = cell.querySelector(".b-msg");
+  m.style.fontSize = "";
+  let fs = parseFloat(getComputedStyle(m).fontSize);
+  while (m.scrollHeight > m.clientHeight + 1 && fs > 11){ fs -= 1; m.style.fontSize = fs + "px"; }
+}
+function setFlip(i, on){
+  const c = cells[i];
+  if (!c.querySelector(".back")) return;
+  c.classList.toggle("flipped", on);
+  c.querySelector(".back").setAttribute("aria-hidden", on ? "false" : "true");
+  if (on){ everFlipped = true; stopAuto(); fitBack(c); if (navigator.vibrate) navigator.vibrate(15); }
+  updateFlipHint();
+}
+cells.forEach((cell, i) => {
+  cell.addEventListener("click", () => {
+    if (i !== idx) return go(i);
+    setFlip(i, !cell.classList.contains("flipped"));
+  });
+});
+cells.forEach(c => c.querySelectorAll("img").forEach(im => im.draggable = false));
+
 strip.addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " "){ e.preventDefault(); setFlip(idx, !cells[idx].classList.contains("flipped")); }
   if (e.key === "ArrowRight"){ e.preventDefault(); go(idx+1); }
   if (e.key === "ArrowLeft"){ e.preventDefault(); go(idx-1); }
 });
@@ -426,7 +539,7 @@ function rollCredits(){
   const ov = $("credits");
   stopAuto();
   ov.hidden = false;
-  $("creditsEnd").classList.remove("on");
+  resetPost();
   requestAnimationFrame(() => ov.classList.add("on"));
   if (reduce){ ov.scrollTop = 0; $("creditsEnd").classList.add("on"); return; }
 
@@ -441,12 +554,74 @@ function rollCredits(){
     {transform:`translateY(${stop + SLOW}px)`, offset: tLinear/(tLinear + tSlow), easing:"ease-out"},
     {transform:`translateY(${stop}px)`}
   ], {duration:(tLinear + tSlow)*1000, fill:"forwards"});
-  rollAnim.onfinish = () => $("creditsEnd").classList.add("on");
+  rollAnim.onfinish = postCredits;
 }
+
+// Cảnh sau danh đề. Mỗi bước hẹn giờ bước sau; chạm vào màn hình thì chạy luôn bước kế tiếp.
+const POST = {hold:2200, dark:3200, card:3600};   // dừng ở "Hết phần 1" · màn đen · mỗi ảnh (ms)
+let pend = null, pendFn = null, stampT = null;
+function later(fn, ms){ clearTimeout(pend); pendFn = fn; pend = setTimeout(() => { pendFn = null; fn(); }, ms); }
+function resetPost(){
+  clearTimeout(pend); clearTimeout(stampT); pend = pendFn = null;
+  roll.classList.remove("fade");
+  $("post").classList.remove("on");
+  $("postOut").classList.remove("on");
+  $("pile").innerHTML = "";
+  $("creditsEnd").classList.remove("on");
+}
+function postCredits(){
+  const B = DATA.bloopers || [];
+  if (!B.length) return $("creditsEnd").classList.add("on");
+  later(() => {
+    roll.classList.add("fade");                         // danh đề tắt dần, chỉ còn màn đen
+    later(() => {
+      const fl = $("flicker");                          // đèn chiếu chớp lên bất ngờ
+      fl.classList.remove("go"); void fl.offsetWidth; fl.classList.add("go");
+      clatter();
+      $("post").classList.add("on");
+      later(() => snap(0), 900);
+    }, 1200 + POST.dark);
+  }, POST.hold);
+
+  function snap(k){
+    const b = B[k], el = document.createElement("div");
+    el.className = "snap";
+    el.style.setProperty("--r", `${(k % 2 ? 1 : -1) * (3 + Math.random()*4)}deg`);
+    const ph = document.createElement("div");
+    ph.className = "ph" + (b.photo ? "" : " s-" + (b.scene || "night"));
+    if (b.photo){
+      const im = document.createElement("img");
+      im.src = b.photo; im.alt = b.caption || ""; im.draggable = false;
+      if (b.pos) im.style.objectPosition = b.pos;
+      ph.append(im);
+    } else {
+      const s = document.createElement("span"); s.className = "sample"; s.textContent = "Ảnh dìm của bạn"; ph.append(s);
+    }
+    if (b.tag){ const t = document.createElement("span"); t.className = "scn"; t.textContent = b.tag; ph.append(t); }
+    const cut = document.createElement("span"); cut.className = "cut"; cut.textContent = "Bị cắt"; ph.append(cut);
+    const cap = document.createElement("div"); cap.className = "cap"; cap.textContent = b.caption || "";
+    el.append(ph, cap);
+    $("pile").querySelectorAll(".snap").forEach(s => s.classList.add("under", "stamped"));   // ảnh cũ chưa kịp đóng dấu (do chạm bỏ qua) thì đóng luôn
+    $("pile").append(el);
+    clearTimeout(stampT);
+    stampT = setTimeout(() => { el.classList.add("stamped"); thud(); if (navigator.vibrate) navigator.vibrate(25); }, 1100);
+    later(() => k + 1 < B.length ? snap(k + 1) : finale(), POST.card);
+  }
+  function finale(){
+    $("postOut").classList.add("on");
+    $("creditsEnd").classList.add("on");
+  }
+}
+$("credits").addEventListener("click", e => {
+  if (e.target.closest("button") || !pendFn) return;
+  const f = pendFn; clearTimeout(pend); pendFn = null; f();
+});
+
 function closeCredits(){
   const ov = $("credits");
   ov.classList.remove("on");
-  setTimeout(() => { ov.hidden = true; if (rollAnim){ rollAnim.cancel(); rollAnim = null; } }, reduce ? 0 : 900);
+  clearTimeout(pend); clearTimeout(stampT); pend = pendFn = null;
+  setTimeout(() => { ov.hidden = true; resetPost(); if (rollAnim){ rollAnim.cancel(); rollAnim = null; } }, reduce ? 0 : 900);
 }
 $("creditsBtn").addEventListener("click", rollCredits);
 $("creditsClose").addEventListener("click", closeCredits);
@@ -479,6 +654,30 @@ function beep(){
   g.gain.exponentialRampToValueAtTime(.0001, t + .09);
   o.connect(g).connect(ac.destination);
   o.start(t); o.stop(t + .1);
+}
+// Tiếng máy chiếu lạch cạch khi cảnh sau danh đề bật lên
+function clatter(){
+  if (!ac || ac.state !== "running") return;
+  const len = Math.floor(ac.sampleRate*.8), buf = ac.createBuffer(1, len, ac.sampleRate), d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++){
+    const tick = (i / ac.sampleRate * 18) % 1 < .25 ? 1 : .15;   // 18 nhịp/giây như cơ cấu kéo phim
+    d[i] = (Math.random()*2 - 1) * tick * Math.min(1, i/(len*.05)) * (1 - i/len);
+  }
+  const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+  src.buffer = buf; f.type = "bandpass"; f.frequency.value = 1400; f.Q.value = .8; g.gain.value = .22;
+  src.connect(f).connect(g).connect(ac.destination);
+  src.start();
+}
+// Tiếng "thịch" khi con dấu đóng xuống
+function thud(){
+  if (!ac || ac.state !== "running") return;
+  const o = ac.createOscillator(), g = ac.createGain(), t = ac.currentTime;
+  o.frequency.setValueAtTime(140, t);
+  o.frequency.exponentialRampToValueAtTime(45, t + .16);
+  g.gain.setValueAtTime(.35, t);
+  g.gain.exponentialRampToValueAtTime(.0001, t + .2);
+  o.connect(g).connect(ac.destination);
+  o.start(t); o.stop(t + .22);
 }
 // Tiếng giấy xé: tiếng ồn lọc dải cao, biên độ lởm chởm như sợi giấy đứt dần
 function tearSound(){
